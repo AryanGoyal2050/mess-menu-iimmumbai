@@ -1,3 +1,5 @@
+Access link: https://aryangoyal2050.github.io/mess-menu-iimmumbai/
+
 # IIM Mumbai Mess Menu – PWA
 
 A tiny installable web app that shows the current or next mess meal based on day/time (IST).  
