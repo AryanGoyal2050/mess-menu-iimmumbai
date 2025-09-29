@@ -1,0 +1,261 @@
+{
+  "timezone": "Asia/Kolkata",
+  "meals": {
+    "breakfast": {
+      "start": "08:00",
+      "end": "10:30"
+    },
+    "lunch": {
+      "start": "12:00",
+      "end": "14:30"
+    },
+    "snacks": {
+      "start": "17:00",
+      "end": "18:00"
+    },
+    "dinner": {
+      "start": "20:00",
+      "end": "22:30"
+    }
+  },
+  "days": {
+    "monday": {
+      "breakfast": [
+        "Matki Usal",
+        "Poha",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 2 Bananas",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Dal Tadka",
+        "Rajma Masala",
+        "Aloo Bhindi Masala",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Curd",
+        "Onion/Lemon/Fruit/Green Salad"
+      ],
+      "snacks": [
+        "Pasta (White Sauce)",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Palak Dal",
+        "Rasam",
+        "Soya Bean Sukka",
+        "Mix Sprouts Curry",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Sabudana Kheer",
+        "Green Salad/Onion/Lemon"
+      ]
+    },
+    "tuesday": {
+      "breakfast": [
+        "Mangalore Bun",
+        "Coconut Chutney",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Bananas",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Pancharatna Dal",
+        "Kadhi Pakoda",
+        "Cabbage Poriyal",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Onion/Lemon/Salad or Black Channa/Sprouts"
+      ],
+      "snacks": [
+        "Pav Bhaji",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Dal Tadka",
+        "Soya Chilli",
+        "Mix Veg",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Green Salad/Lemon/Onion"
+      ]
+    },
+    "wednesday": {
+      "breakfast": [
+        "Aloo Pyaaz Paratha",
+        "Curd",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 2 Bananas",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Dal Fry",
+        "Black Channa Masala",
+        "Baby Corn Aloo Chilli",
+        "Plain & Jeera Rice",
+        "Phulka",
+        "Fryums",
+        "Onion/Fruit/Salad/Sprouts/Lemon"
+      ],
+      "snacks": [
+        "Bhel Puri",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Chicken Masala / Paneer Lababdar",
+        "Dal Tadka",
+        "Plain/Jeera Rice",
+        "Phulka",
+        "Papad",
+        "Gulab Jamun",
+        "Boondi Raita",
+        "Green Salad/Onion/Lemon"
+      ]
+    },
+    "thursday": {
+      "breakfast": [
+        "Idli",
+        "Sambar",
+        "Green Coconut Chutney",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 1 Banana",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Red Masoor Dal",
+        "Seasonal Veg Dry",
+        "Corn Palak Gravy",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Green Salad/Vegetable Raita/Lemon/Onion"
+      ],
+      "snacks": [
+        "Masala Sandwich",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Dal Makhani",
+        "Aloo Jeera",
+        "Kabuli Chana Masala",
+        "Rasam",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Green Salad/Onion/Lemon"
+      ]
+    },
+    "friday": {
+      "breakfast": [
+        "Tomato Omelette (Veg)",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 1 Banana",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Vegetable Handi Pulao",
+        "Dal Tadka",
+        "Dum Aloo (Gravy)",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Green Salad/Vegetable Raita/Lemon/Onion"
+      ],
+      "snacks": [
+        "Dahi Vada / Hakka Noodles",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Toor Dal Tadka",
+        "Veg Keema",
+        "Methi Mutter Masala",
+        "Plain/Jeera Rice",
+        "Phulka",
+        "Papad",
+        "Shahi Tukda",
+        "Green Salad/Onion/Lemon"
+      ]
+    },
+    "saturday": {
+      "breakfast": [
+        "Medu Vada",
+        "Sambar",
+        "Green Coconut Chutney",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 1 Banana",
+        "Tea/Coffee/Milk",
+        "Cornflakes",
+        "Seasonal Fruit"
+      ],
+      "lunch": [
+        "Chole Bhature",
+        "Vegetable Khichdi",
+        "Phulka/Rice/Dal/Papad/Buttermilk",
+        "Salad/Black Channa/Seasonal Fruit/Sprouts/Lemon/Onion"
+      ],
+      "snacks": [
+        "Samosa with Green/Red Chutney",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Bhindi Masala",
+        "Black Masoor Dal",
+        "Sambar",
+        "Soya Keema",
+        "Plain Rice",
+        "Phulka",
+        "Fryums",
+        "Green Salad/Lemon/Onion"
+      ]
+    },
+    "sunday": {
+      "breakfast": [
+        "Masala Dosa",
+        "Sambar",
+        "Coconut Chutney",
+        "Toasted Bread + Butter + Jam",
+        "2 Boiled Eggs / 2 Omelettes / 1 Seasonal Fruit / 2 Bananas",
+        "Tea/Coffee/Milk",
+        "Chocos"
+      ],
+      "lunch": [
+        "Paneer Veg Biryani / Chicken Biryani",
+        "Veg Salan",
+        "Toor Dal Tadka",
+        "Phulka",
+        "Plain Rice",
+        "Fryums",
+        "Ice Cream",
+        "Green Salad/Veg Raita/Lemon/Onion"
+      ],
+      "snacks": [
+        "Pani Puri",
+        "Tea/Coffee/Milk"
+      ],
+      "dinner": [
+        "Dal",
+        "Rasam",
+        "Veg Kolhapuri",
+        "French Fries/Finger Chips",
+        "Plain Rice",
+        "Phulka",
+        "Papad",
+        "Green Salad/Lemon/Onion"
+      ]
+    }
+  }
+}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IIM Mumbai Mess Menu</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2196f3">
+  <style>
+    :root{--bg:#0b1020;--card:#141a2f;--text:#eaf2ff;--muted:#9bb0d3;--accent:#2196f3;}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:flex-start}
+    .container{width:100%;max-width:720px;padding:16px}
+    .card{background:linear-gradient(180deg,#141a2f,#10162a);border:1px solid #223052; box-shadow:0 10px 30px rgba(0,0,0,.45); border-radius:20px; padding:20px}
+    h1{font-size:1.4rem;margin:0 0 8px}
+    .sub{color:var(--muted);font-size:.95rem;margin:0 0 16px}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:#0e1428;border:1px solid #213052;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:.85rem}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;margin-bottom:14px}
+    .select{flex:1;min-width:180px;padding:10px;border:1px solid #29406c;background:#0c1326;color:var(--text);border-radius:10px}
+    .btn{appearance:none;border:none;background:var(--accent);color:white;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+    .btn.outline{background:transparent;border:1px solid #29406c;color:var(--text)}
+    ul{padding-left:18px;line-height:1.6}
+    .grid{display:grid;grid-template-columns:1fr; gap:12px}
+    .meal-card{background:#0d1429;border:1px solid #253659;border-radius:16px;padding:14px}
+    .meal-card h3{margin:0 0 6px;font-size:1.1rem}
+    .footer{margin-top:16px;color:#90a7d0;font-size:.85rem}
+    a{color:#90c4ff}
+    .badge{display:inline-block;background:#102246;color:#b9d5ff;border:1px solid #274f8b;padding:6px 10px;border-radius:999px;font-size:.8rem}
+    .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🍽️ IIM Mumbai Mess Menu</h1>
+      <p class="sub" id="status">Loading menu…</p>
+
+      <div class="row">
+        <select id="daySelect" class="select" aria-label="Select day"></select>
+        <select id="mealSelect" class="select" aria-label="Select meal"></select>
+        <button id="nowBtn" class="btn outline" title="Jump to current/next meal">Now</button>
+        <button id="installBtn" class="btn" hidden>Install</button>
+      </div>
+
+      <div class="grid" id="cards"></div>
+      <div class="footer">
+        <div class="flex">
+          <span class="badge" id="timeBadge">--:--</span>
+          <span class="badge" id="tzBadge"></span>
+          <span class="badge" id="infoBadge"></span>
+        </div>
+        <p style="margin-top:10px">Tip: Edit <code>menu.json</code> in your GitHub repo to update items. Works offline once opened.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+let MENU = null;
+let deferredPrompt = null;
+
+const MEAL_ORDER = ["breakfast","lunch","snacks","dinner"];
+const DAY_ORDER = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+
+function pad(n){return n.toString().padStart(2,'0');}
+function parseHM(s){const [h,m]=s.split(':').map(Number);return h*60+m;}
+function nowMinutes(){
+  const d = new Date();
+  return d.getHours()*60 + d.getMinutes();
+}
+function humanTime(){
+  const d = new Date();
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function currentDayIndex(){ return new Date().getDay(); } // 0=Sun
+
+function mealWindowFor(mealKey){
+  const m = MENU.meals[mealKey];
+  return [parseHM(m.start), parseHM(m.end)];
+}
+
+function whichMealNow(idxDay){
+  const t = nowMinutes();
+  // check current day windows
+  for(const key of MEAL_ORDER){
+    const [s,e] = mealWindowFor(key);
+    if(t >= s && t <= e){ 
+      return {dayIndex: idxDay, meal: key, state:"current"};
+    }
+  }
+  // next meal today
+  for(const key of MEAL_ORDER){
+    const [s,_] = mealWindowFor(key);
+    if(t < s){
+      return {dayIndex: idxDay, meal: key, state:"upcoming"};
+    }
+  }
+  // else first meal of next day
+  const nextDay = (idxDay + 1) % 7;
+  return {dayIndex: nextDay, meal: MEAL_ORDER[0], state:"tomorrow"};
+}
+
+function populateSelectors(){
+  const daySel = document.getElementById('daySelect');
+  const mealSel = document.getElementById('mealSelect');
+  daySel.innerHTML = DAY_ORDER.map((d,i)=>`<option value="${i}">${d[0].toUpperCase()+d.slice(1)}</option>`).join('');
+  mealSel.innerHTML = MEAL_ORDER.map(k=>`<option value="${k}">${k[0].toUpperCase()+k.slice(1)}</option>`).join('');
+}
+
+function renderCards(dayIndex, specificMeal=null){
+  const cards = document.getElementById('cards');
+  const dayKey = DAY_ORDER[dayIndex];
+  const dayMenu = MENU.days[dayKey];
+
+  let mealsToShow = specificMeal ? [specificMeal] : MEAL_ORDER;
+
+  cards.innerHTML = mealsToShow.map(meal=>{
+    const items = (dayMenu[meal]||[]).map(i=>`<li>${i}</li>`).join('');
+    const win = MENU.meals[meal];
+    return `
+      <div class="meal-card">
+        <h3>${meal[0].toUpperCase()+meal.slice(1)} <span class="pill">${win.start} – ${win.end}</span></h3>
+        ${items?`<ul>${items}</ul>`:`<p class="sub">No items listed. Edit <code>menu.json</code>.</p>`}
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('daySelect').value = dayIndex;
+  document.getElementById('mealSelect').value = specificMeal || '';
+}
+
+function jumpToNow(){
+  const idx = currentDayIndex();
+  const res = whichMealNow(idx);
+  renderCards(res.dayIndex, res.meal);
+  const status = document.getElementById('status');
+  const dayLabel = DAY_ORDER[res.dayIndex][0].toUpperCase()+DAY_ORDER[res.dayIndex].slice(1);
+  const stateText = res.state==="current" ? "Now serving" : res.state==="upcoming" ? "Next meal" : "Next meal (tomorrow)";
+  status.textContent = `${stateText}: ${dayLabel} • ${res.meal[0].toUpperCase()+res.meal.slice(1)}`;
+  document.getElementById('infoBadge').textContent = stateText;
+}
+
+async function loadMenu(){
+  const resp = await fetch('menu.json?v=' + Date.now());
+  MENU = await resp.json();
+  document.getElementById('tzBadge').textContent = MENU.timezone || 'Local Time';
+  populateSelectors();
+  jumpToNow();
+  setInterval(()=>{
+    document.getElementById('timeBadge').textContent = humanTime();
+  }, 1000);
+}
+
+document.getElementById('nowBtn').addEventListener('click', jumpToNow);
+document.getElementById('daySelect').addEventListener('change', (e)=>{
+  renderCards(Number(e.target.value), document.getElementById('mealSelect').value || null);
+  document.getElementById('status').textContent = "Browse by day/meal";
+  document.getElementById('infoBadge').textContent = "Manual view";
+});
+document.getElementById('mealSelect').addEventListener('change', (e)=>{
+  const dayIndex = Number(document.getElementById('daySelect').value);
+  const meal = e.target.value || null;
+  renderCards(dayIndex, meal);
+  document.getElementById('status').textContent = "Browse by day/meal";
+  document.getElementById('infoBadge').textContent = "Manual view";
+});
+
+// PWA install prompt
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('installBtn');
+  btn.hidden = false;
+  btn.addEventListener('click', async ()=>{
+    btn.hidden = true;
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    }
+  }, { once: true });
+});
+
+// Register service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js');
+  });
+}
+
+loadMenu();
+</script>
+</body>
+</html>
