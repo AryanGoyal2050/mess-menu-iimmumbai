@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IIM Mumbai Mess Menu</title>
+  <title>Mess Menu</title>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#2196f3">
   <style>
@@ -12,159 +12,86 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:flex-start}
     .container{width:100%;max-width:720px;padding:16px}
     .card{background:linear-gradient(180deg,#141a2f,#10162a);border:1px solid #223052; box-shadow:0 10px 30px rgba(0,0,0,.45); border-radius:20px; padding:20px}
-    h1{font-size:1.4rem;margin:0 0 8px}
-    .sub{color:var(--muted);font-size:.95rem;margin:0 0 16px}
-    .pill{display:inline-flex;align-items:center;gap:8px;background:#0e1428;border:1px solid #213052;color:var(--muted);padding:6px 10px;border-radius:999px;font-size:.85rem}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;margin-bottom:14px}
-    .select{flex:1;min-width:180px;padding:10px;border:1px solid #29406c;background:#0c1326;color:var(--text);border-radius:10px}
+    h1{font-size:1.4rem;margin:0 0 12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;margin-bottom:14px;align-items:center;justify-content:space-between}
     .btn{appearance:none;border:none;background:var(--accent);color:white;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
     .btn.outline{background:transparent;border:1px solid #29406c;color:var(--text)}
-    ul{padding-left:18px;line-height:1.6}
     .grid{display:grid;grid-template-columns:1fr; gap:12px}
+    .section-title{margin:12px 0 6px;font-size:1.05rem;color:#cfe1ff}
     .meal-card{background:#0d1429;border:1px solid #253659;border-radius:16px;padding:14px}
     .meal-card h3{margin:0 0 6px;font-size:1.1rem}
-    .footer{margin-top:16px;color:#90a7d0;font-size:.85rem}
-    a{color:#90c4ff}
-    .badge{display:inline-block;background:#102246;color:#b9d5ff;border:1px solid #274f8b;padding:6px 10px;border-radius:999px;font-size:.8rem}
-    .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:#0e1428;border:1px solid #213052;color:#b9c7e8;padding:6px 10px;border-radius:999px;font-size:.85rem}
+    ul{padding-left:18px;line-height:1.6;margin:6px 0 0}
+    .muted{color:var(--muted)}
+    .hidden{display:none !important}
+    .field{display:flex;gap:8px}
+    input[type="email"], input[type="text"]{flex:1;min-width:240px;padding:10px;border:1px solid #29406c;background:#0c1326;color:var(--text);border-radius:10px}
+    label{font-size:.9rem;color:#b9c7e8;margin-bottom:6px;display:block}
+    .error{color:#ff9191;margin-top:6px;font-size:.9rem}
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <h1>🍽️ IIM Mumbai Mess Menu</h1>
-      <p class="sub" id="status">Loading menu…</p>
-
       <div class="row">
-        <select id="daySelect" class="select" aria-label="Select day"></select>
-        <select id="mealSelect" class="select" aria-label="Select meal"></select>
-        <button id="nowBtn" class="btn outline" title="Jump to current/next meal">Now</button>
+        <h1>🍽️ Mess Menu</h1>
         <button id="installBtn" class="btn" hidden>Install</button>
       </div>
 
-      <div class="grid" id="cards"></div>
-      <div class="footer">
-        <div class="flex">
-          <span class="badge" id="timeBadge">--:--</span>
-          <span class="badge" id="tzBadge"></span>
-          <span class="badge" id="infoBadge"></span>
+      <!-- AUTH GATE -->
+      <div id="authGate">
+        <p class="muted">Please verify your email to continue.</p>
+        <label for="email">IIM Mumbai Email</label>
+        <div class="field">
+          <input id="email" type="email" placeholder="you@iimmumbai.ac.in" autocomplete="email" inputmode="email">
+          <button id="sendOtpBtn" class="btn outline">Send OTP</button>
         </div>
-        <p style="margin-top:10px">Tip: Edit <code>menu.json</code> in your GitHub repo to update items. Works offline once opened.</p>
+        <div id="emailError" class="error hidden"></div>
+        <div id="otpArea" class="hidden" style="margin-top:12px">
+          <label for="otp">Enter OTP</label>
+          <div class="field">
+            <input id="otp" type="text" placeholder="6-digit code" inputmode="numeric" maxlength="6">
+            <button id="verifyBtn" class="btn">Verify</button>
+          </div>
+          <div id="otpError" class="error hidden"></div>
+          <p class="muted" id="otpHint" style="margin:6px 0 0"></p>
+        </div>
+      </div>
+
+      <!-- APP CONTENT -->
+      <div id="app" class="hidden">
+        <div id="currentSection" class="hidden">
+          <div class="section-title">Currently Serving</div>
+          <div id="currentCard" class="meal-card"></div>
+        </div>
+
+        <div id="nextSection">
+          <div class="section-title">Next Meal</div>
+          <div id="nextCard" class="meal-card"></div>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-let MENU = null;
+/* =====================
+   CONFIG
+===================== */
+const CONFIG = {
+  emailDomain: "@iimmumbai.ac.in",
+  otpExpireMinutes: 10,
+  sessionDays: 30,
+  emailProvider: "webhook", // "webhook" or "gmail_api"
+  webhookUrl: "", // e.g. "https://script.google.com/macros/s/XXXXX/exec"
+  gmail: {
+    clientId: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+  }
+};
+
+/* =====================
+   PWA Install
+===================== */
 let deferredPrompt = null;
-
-const MEAL_ORDER = ["breakfast","lunch","snacks","dinner"];
-const DAY_ORDER = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
-
-function pad(n){return n.toString().padStart(2,'0');}
-function parseHM(s){const [h,m]=s.split(':').map(Number);return h*60+m;}
-function nowMinutes(){
-  const d = new Date();
-  return d.getHours()*60 + d.getMinutes();
-}
-function humanTime(){
-  const d = new Date();
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-function currentDayIndex(){ return new Date().getDay(); } // 0=Sun
-
-function mealWindowFor(mealKey){
-  const m = MENU.meals[mealKey];
-  return [parseHM(m.start), parseHM(m.end)];
-}
-
-function whichMealNow(idxDay){
-  const t = nowMinutes();
-  // check current day windows
-  for(const key of MEAL_ORDER){
-    const [s,e] = mealWindowFor(key);
-    if(t >= s && t <= e){ 
-      return {dayIndex: idxDay, meal: key, state:"current"};
-    }
-  }
-  // next meal today
-  for(const key of MEAL_ORDER){
-    const [s,_] = mealWindowFor(key);
-    if(t < s){
-      return {dayIndex: idxDay, meal: key, state:"upcoming"};
-    }
-  }
-  // else first meal of next day
-  const nextDay = (idxDay + 1) % 7;
-  return {dayIndex: nextDay, meal: MEAL_ORDER[0], state:"tomorrow"};
-}
-
-function populateSelectors(){
-  const daySel = document.getElementById('daySelect');
-  const mealSel = document.getElementById('mealSelect');
-  daySel.innerHTML = DAY_ORDER.map((d,i)=>`<option value="${i}">${d[0].toUpperCase()+d.slice(1)}</option>`).join('');
-  mealSel.innerHTML = MEAL_ORDER.map(k=>`<option value="${k}">${k[0].toUpperCase()+k.slice(1)}</option>`).join('');
-}
-
-function renderCards(dayIndex, specificMeal=null){
-  const cards = document.getElementById('cards');
-  const dayKey = DAY_ORDER[dayIndex];
-  const dayMenu = MENU.days[dayKey];
-
-  let mealsToShow = specificMeal ? [specificMeal] : MEAL_ORDER;
-
-  cards.innerHTML = mealsToShow.map(meal=>{
-    const items = (dayMenu[meal]||[]).map(i=>`<li>${i}</li>`).join('');
-    const win = MENU.meals[meal];
-    return `
-      <div class="meal-card">
-        <h3>${meal[0].toUpperCase()+meal.slice(1)} <span class="pill">${win.start} – ${win.end}</span></h3>
-        ${items?`<ul>${items}</ul>`:`<p class="sub">No items listed. Edit <code>menu.json</code>.</p>`}
-      </div>
-    `;
-  }).join('');
-
-  document.getElementById('daySelect').value = dayIndex;
-  document.getElementById('mealSelect').value = specificMeal || '';
-}
-
-function jumpToNow(){
-  const idx = currentDayIndex();
-  const res = whichMealNow(idx);
-  renderCards(res.dayIndex, res.meal);
-  const status = document.getElementById('status');
-  const dayLabel = DAY_ORDER[res.dayIndex][0].toUpperCase()+DAY_ORDER[res.dayIndex].slice(1);
-  const stateText = res.state==="current" ? "Now serving" : res.state==="upcoming" ? "Next meal" : "Next meal (tomorrow)";
-  status.textContent = `${stateText}: ${dayLabel} • ${res.meal[0].toUpperCase()+res.meal.slice(1)}`;
-  document.getElementById('infoBadge').textContent = stateText;
-}
-
-async function loadMenu(){
-  const resp = await fetch('menu.json?v=' + Date.now());
-  MENU = await resp.json();
-  document.getElementById('tzBadge').textContent = MENU.timezone || 'Local Time';
-  populateSelectors();
-  jumpToNow();
-  setInterval(()=>{
-    document.getElementById('timeBadge').textContent = humanTime();
-  }, 1000);
-}
-
-document.getElementById('nowBtn').addEventListener('click', jumpToNow);
-document.getElementById('daySelect').addEventListener('change', (e)=>{
-  renderCards(Number(e.target.value), document.getElementById('mealSelect').value || null);
-  document.getElementById('status').textContent = "Browse by day/meal";
-  document.getElementById('infoBadge').textContent = "Manual view";
-});
-document.getElementById('mealSelect').addEventListener('change', (e)=>{
-  const dayIndex = Number(document.getElementById('daySelect').value);
-  const meal = e.target.value || null;
-  renderCards(dayIndex, meal);
-  document.getElementById('status').textContent = "Browse by day/meal";
-  document.getElementById('infoBadge').textContent = "Manual view";
-});
-
-// PWA install prompt
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault();
   deferredPrompt = e;
@@ -174,20 +101,174 @@ window.addEventListener('beforeinstallprompt', (e)=>{
     btn.hidden = true;
     if(deferredPrompt){
       deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
+      await deferredPrompt.userChoice;
       deferredPrompt = null;
     }
   }, { once: true });
 });
-
-// Register service worker
 if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js');
+  window.addEventListener('load', ()=>navigator.serviceWorker.register('service-worker.js'));
+}
+
+/* =====================
+   MENU LOGIC
+===================== */
+const MEAL_ORDER = ["breakfast","lunch","snacks","dinner"];
+const DAY_ORDER = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+let MENU = null;
+
+function parseHM(s){const [h,m]=s.split(':').map(Number);return h*60+m;}
+function nowMinutes(){
+  const d = new Date();
+  return d.getHours()*60 + d.getMinutes();
+}
+function mealWindow(mealKey){
+  const m = MENU.meals[mealKey];
+  return [parseHM(m.start), parseHM(m.end)];
+}
+function whichCurrent(idxDay){
+  const t = nowMinutes();
+  for(const key of MEAL_ORDER){
+    const [s,e] = mealWindow(key);
+    if(t >= s && t <= e) return {dayIndex: idxDay, meal: key};
+  }
+  return null;
+}
+function whichNext(idxDay){
+  const t = nowMinutes();
+  for(const key of MEAL_ORDER){
+    const [s,_] = mealWindow(key);
+    if(t < s) return {dayIndex: idxDay, meal: key};
+  }
+  return {dayIndex: (idxDay+1)%7, meal: MEAL_ORDER[0]};
+}
+function titleCase(s){ return s ? s[0].toUpperCase()+s.slice(1) : s; }
+
+function renderMealCard(containerId, dayIndex, meal){
+  const dayKey = DAY_ORDER[dayIndex];
+  const items = (MENU.days[dayKey]?.[meal] || []);
+  const win = MENU.meals[meal];
+  const html = `
+    <h3>${titleCase(meal)} <span class="pill">${win.start} – ${win.end}</span></h3>
+    ${items.length ? `<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>` : `<p class="muted">No items listed in menu.json</p>`}
+  `;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function refreshView(){
+  const today = new Date().getDay();
+  const cur = whichCurrent(today);
+  const nxt = whichNext(today);
+
+  const currentSection = document.getElementById('currentSection');
+  if(cur){
+    currentSection.classList.remove('hidden');
+    renderMealCard('currentCard', cur.dayIndex, cur.meal);
+  } else {
+    currentSection.classList.add('hidden');
+  }
+  renderMealCard('nextCard', nxt.dayIndex, nxt.meal);
+}
+
+async function loadMenu(){
+  const resp = await fetch('menu.json?v='+Date.now());
+  MENU = await resp.json();
+  refreshView();
+}
+
+/* =====================
+   AUTH GATE (Email + OTP)
+===================== */
+const authKey = 'mm_auth_v1';
+function setSession(email){
+  const exp = Date.now() + CONFIG.sessionDays*24*60*60*1000;
+  localStorage.setItem(authKey, JSON.stringify({email, exp}));
+}
+function getSession(){
+  try { return JSON.parse(localStorage.getItem(authKey) || "null"); } catch(e){ return null; }
+}
+function hasValidSession(){
+  const s = getSession();
+  return s && s.exp && Date.now() < s.exp && typeof s.email === 'string' && s.email.endsWith(CONFIG.emailDomain);
+}
+
+let OTP_VALUE = null;
+let OTP_EXPIRES = 0;
+let OTP_EMAIL = "";
+
+function genOtp(){ return Math.floor(100000 + Math.random()*900000).toString(); }
+
+async function sendOtpEmail(toEmail, otp){
+  const subject = "Your Mess Menu verification code";
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5">
+      <p>Hi,</p>
+      <p>Your verification code is:</p>
+      <p style="font-size:24px;font-weight:700;letter-spacing:2px">${otp}</p>
+      <p>This code expires in ${CONFIG.otpExpireMinutes} minutes.</p>
+    </div>`;
+
+  if(CONFIG.emailProvider === "webhook"){
+    if(!CONFIG.webhookUrl) throw new Error("EMAIL_WEBHOOK_URL is not set.");
+    const res = await fetch(CONFIG.webhookUrl, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ to: toEmail, subject, html })
+    });
+    if(!res.ok) throw new Error("Webhook email failed: " + res.status);
+  } else if(CONFIG.emailProvider === "gmail_api"){
+    throw new Error("Gmail API flow not implemented. See README for setup.");
+  } else {
+    throw new Error("Unknown emailProvider");
+  }
+}
+
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(id){ document.getElementById(id).classList.add('hidden'); }
+function setError(id, msg){ const el=document.getElementById(id); if(msg){el.textContent=msg; el.classList.remove('hidden');} else {el.classList.add('hidden');} }
+
+function initAuth(){
+  if(hasValidSession()){
+    hide('authGate'); show('app'); loadMenu(); return;
+  }
+  const emailInp = document.getElementById('email');
+  const sendBtn = document.getElementById('sendOtpBtn');
+  const otpArea = document.getElementById('otpArea');
+  const otpInp = document.getElementById('otp');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const otpHint = document.getElementById('otpHint');
+
+  sendBtn.addEventListener('click', async ()=>{
+    const email = (emailInp.value || "").trim().toLowerCase();
+    if(!email.endsWith(CONFIG.emailDomain)){
+      setError('emailError', `Please use your ${CONFIG.emailDomain} email.`);
+      return;
+    }
+    setError('emailError', "");
+    OTP_VALUE = genOtp();
+    OTP_EXPIRES = Date.now() + CONFIG.otpExpireMinutes*60*1000;
+    OTP_EMAIL = email;
+    otpHint.textContent = `Code sent to ${email}.`;
+    show('otpArea');
+    try{
+      await sendOtpEmail(email, OTP_VALUE);
+    }catch(err){
+      setError('emailError', "Failed to send OTP: " + err.message);
+    }
+  });
+
+  verifyBtn.addEventListener('click', ()=>{
+    const code = (otpInp.value || "").trim();
+    if(!OTP_VALUE){ setError('otpError',"Please request an OTP first."); return; }
+    if(Date.now() > OTP_EXPIRES){ setError('otpError',"OTP expired. Please resend."); return; }
+    if(code !== OTP_VALUE){ setError('otpError',"Incorrect code. Try again."); return; }
+    setError('otpError',"");
+    setSession(OTP_EMAIL);
+    hide('authGate'); show('app'); loadMenu();
   });
 }
 
-loadMenu();
+initAuth();
 </script>
 </body>
 </html>
